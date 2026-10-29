@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Quick Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a working form on the left, a live verdict panel that stays in view on the right; one column on phones. */
+:root {
+  --bg: #F6F4EF; --surface: #FFFFFF; --surface-2: #EEF1F5; --ink: #1F2838; --ink-soft: #4A5262; --ink-mute: #6A7280;
+  --line: #DCD8CE; --navy: #0A2342; --on-navy: #F6F4EF; --gold: #C9A442; --gold-text: #7E6319;
+  --low: #1F6B45; --low-bg: #E3F1E8; --amber: #8A5A00; --amber-bg: #FBEFD5; --high: #A3401E; --high-bg: #F7E4DC;
+  --focus: #2F6F8F;
+  --font-display: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+  --font-body: 'Public Sans', Arial, Helvetica, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1624; --surface: #16213A; --surface-2: #1C2944; --ink: #E8ECF3; --ink-soft: #BAC4D4; --ink-mute: #8E9AAE;
+  --line: #2C3A58; --navy: #22385F; --on-navy: #F1EEE6; --gold: #D9B95A; --gold-text: #E0C375;
+  --low: #7FD3A3; --low-bg: #16362A; --amber: #F2C46B; --amber-bg: #3A2E14; --high: #F29A7A; --high-bg: #3D2219; --focus: #7FB8D6;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1624; --surface: #16213A; --surface-2: #1C2944; --ink: #E8ECF3; --ink-soft: #BAC4D4; --ink-mute: #8E9AAE;
+  --line: #2C3A58; --navy: #22385F; --on-navy: #F1EEE6; --gold: #D9B95A; --gold-text: #E0C375;
+  --low: #7FD3A3; --low-bg: #16362A; --amber: #F2C46B; --amber-bg: #3A2E14; --high: #F29A7A; --high-bg: #3D2219; --focus: #7FB8D6;
+  color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 56px; }
+header.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 32px; padding-bottom: 20px; border-bottom: 2px solid var(--navy); margin-bottom: 24px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-text); margin: 0 0 6px; }
+h1 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px); line-height: 1.15; margin: 0; color: var(--ink); text-wrap: balance; }
+.lede { max-width: 62ch; color: var(--ink-soft); margin: 8px 0 0; }
+.examples { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.examples span { font-size: 13px; color: var(--ink-mute); width: 100%; }
+button { font-family: inherit; font-size: 14px; cursor: pointer; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 14px; }
+.chip:hover { border-color: var(--navy); }
+.chip.ghost { background: transparent; color: var(--ink-soft); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+section.step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; margin-bottom: 18px; min-width: 0; }
+.step h2 { font-family: var(--font-display); font-size: 20px; margin: 0 0 4px; color: var(--ink); display: flex; gap: 12px; align-items: baseline; }
+.step h2 .n { font-family: var(--font-body); font-size: 13px; font-weight: 700; color: var(--on-navy); background: var(--navy); border-radius: 999px; min-width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.step .hint { color: var(--ink-mute); font-size: 13.5px; margin: 0 0 16px; max-width: 70ch; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.fields .full { grid-column: 1 / -1; }
+@media (max-width: 560px) { .fields { grid-template-columns: 1fr; } }
+label.f { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: var(--ink-soft); min-width: 0; }
+input[type=text], textarea, select { font: inherit; font-weight: 400; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; width: 100%; }
+textarea { min-height: 70px; resize: vertical; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 0; margin-bottom: 6px; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; }
+.checks label { display: inline-flex; gap: 6px; align-items: center; }
+.q { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 6px 12px; align-items: start; padding: 14px 0; border-top: 1px solid var(--line); }
+.q:first-of-type { border-top: 0; padding-top: 4px; }
+.q .num { font-weight: 700; color: var(--gold-text); font-variant-numeric: tabular-nums; padding-top: 6px; }
+.q .text { padding-top: 5px; min-width: 0; }
+.q .text small { display: block; color: var(--ink-mute); font-size: 12.5px; margin-top: 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg label { padding: 7px 12px; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; border-left: 1px solid var(--line); background: var(--surface); white-space: nowrap; }
+.seg label:first-of-type { border-left: 0; }
+.seg input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: -3px; }
+.seg input:checked + label { background: var(--navy); color: var(--on-navy); }
+.seg input:checked + label.v-yes, .seg input:checked + label.v-bad { background: var(--high); color: var(--surface); }
+.seg input:checked + label.v-uns { background: var(--amber); color: var(--surface); }
+.seg input:checked + label.v-ok { background: var(--low); color: var(--surface); }
+@media (max-width: 560px) { .q { grid-template-columns: 24px minmax(0, 1fr); } .q .seg { grid-column: 2; } }
+.np { display: grid; gap: 8px; font-size: 14px; }
+.np label { display: flex; gap: 10px; align-items: flex-start; }
+.np input { margin-top: 4px; }
+aside.verdict { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: flex; flex-direction: column; gap: 14px; }
+@media (max-width: 900px) { aside.verdict { position: static; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; }
+.status { border-radius: 10px; padding: 18px 20px; border: 1px solid var(--line); background: var(--surface-2); }
+.status .tag { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.status h3 { font-family: var(--font-display); font-size: 22px; line-height: 1.2; margin: 6px 0 6px; color: var(--ink); }
+.status p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.status.low { background: var(--low-bg); border-color: var(--low); } .status.low .tag { color: var(--low); }
+.status.amber { background: var(--amber-bg); border-color: var(--amber); } .status.amber .tag { color: var(--amber); }
+.status.high { background: var(--high-bg); border-color: var(--high); } .status.high .tag { color: var(--high); }
+.status.idle .tag { color: var(--ink-mute); }
+.meter { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 12px; }
+.meter i { display: block; height: 100%; background: var(--navy); width: 0; transition: width .2s; }
+.card h4 { margin: 0 0 8px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-mute); }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; color: var(--ink-soft); }
+.card ul:empty::before { content: "Nothing yet."; color: var(--ink-mute); margin-left: -18px; }
+.actions { display: grid; gap: 8px; }
+.btn { border: 1px solid var(--navy); background: var(--navy); color: var(--on-navy); border-radius: 8px; padding: 10px 14px; font-weight: 600; text-align: left; }
+.btn.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.toast { font-size: 13px; color: var(--low); min-height: 1.2em; margin: 2px 0 0; }
+.fallback { width: 100%; min-height: 120px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+footer.foot { margin-top: 28px; font-size: 12.5px; color: var(--ink-mute); max-width: 80ch; }
+@media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">[Firm name] · AI Governance Kit · Gate 1</p>
+      <h1>AI Quick Check</h1>
+      <p class="lede">Before using a new AI tool for firm work, or an approved tool in a new way, answer these questions. You will see straight away whether it is likely to be low risk, and you can send the result to the AI Lead. This is the on-screen version of the AI Request and Quick Check (SME-03).</p>
+    </div>
+    <div class="examples" role="group" aria-label="Load an example">
+      <span>Try an example:</span>
+      <button class="chip" type="button" data-example="grammar">Grammar checker</button>
+      <button class="chip" type="button" data-example="copilot">Microsoft 365 Copilot</button>
+      <button class="chip" type="button" data-example="cv">CV screening tool</button>
+      <button class="chip ghost" type="button" id="clearBtn">Clear form</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <form id="qc" autocomplete="off" novalidate>
+      <section class="step">
+        <h2><span class="n">1</span>The tool and how you want to use it</h2>
+        <p class="hint">A few sentences is enough. If you are already using the tool, say so: that is welcome and never a disciplinary matter.</p>
+        <div class="fields">
+          <label class="f">Your name and team<input type="text" id="who"></label>
+          <label class="f">Tool or feature name<input type="text" id="tool"></label>
+          <label class="f">Supplier<input type="text" id="supplier"></label>
+          <label class="f">New tool or new use?
+            <select id="kind"><option value="">Choose…</option><option>New tool</option><option>New use of an approved tool</option></select></label>
+          <label class="f full">What do you want to use it for?<textarea id="purpose"></textarea></label>
+          <label class="f">Who will use it?
+            <select id="users"><option value="">Choose…</option><option>Just me</option><option>My team</option><option>Whole firm</option><option>Clients or the public</option></select></label>
+          <label class="f">Already in use?
+            <select id="already"><option value="">Choose…</option><option>No</option><option>Yes</option></select></label>
+          <fieldset class="full"><legend>What information will go into it?</legend>
+            <div class="checks" id="data">
+              <label><input type="checkbox" value="None"> None beyond general questions</label>
+              <label><input type="checkbox" value="Firm internal"> Firm internal</label>
+              <label><input type="checkbox" value="Client data"> Client information</label>
+              <label><input type="checkbox" value="Staff data"> Staff information</label>
+              <label><input type="checkbox" value="Other personal data"> Other personal data</label>
+            </div></fieldset>
+          <label class="f full">What happens to its output?<input type="text" id="output" placeholder="For example: I read it and decide; it goes into a draft for review"></label>
+        </div>
+      </section>
+
+      <section class="step">
+        <h2><span class="n">2</span>Is it on the not-permitted list?</h2>
+        <p class="hint">These are never allowed, with any tool (AI Policy, SME-02 section 5). Tick any that apply to what you want to do.</p>
+        <div class="np" id="np">
+          <label><input type="checkbox" value="Client, staff or firm data in a tool not approved for it"> Putting client, staff or firm information into a tool not approved for it, including a free or personal account</label>
+          <label><input type="checkbox" value="AML suspicion or SAR information"> Putting anything about money laundering suspicions or suspicious activity reports into the tool</label>
+          <label><input type="checkbox" value="Final decisions about people without human review"> Letting AI make a final decision about a person without real human review</label>
+          <label><input type="checkbox" value="Unchecked output sent outside the firm"> Sending its output to a client, HMRC, Companies House or a lender without a qualified person checking it</label>
+          <label><input type="checkbox" value="Getting round approval"> Getting round approval, for example a personal account or an AI browser extension</label>
+          <label><input type="checkbox" value="Deceptive or abusive content"> Creating fake reviews, abusive content, or images or audio imitating real people</label>
+        </div>
+      </section>
+
+      <section class="step">
+        <h2><span class="n">3</span>Five supplier checks</h2>
+        <p class="hint">Look in the supplier's terms, privacy policy or trust centre. The AI Lead can help.</p>
+        <div id="supplierQs"></div>
+      </section>
+
+      <section class="step">
+        <h2><span class="n">4</span>The seven quick-check questions</h2>
+        <p class="hint">If you are not sure, choose Unsure: the AI Lead will usually settle it with you in five minutes. Ordinary tools on a business account, with a person checking the output, normally come out as all No.</p>
+        <div id="quickQs"></div>
+      </section>
+    </form>
+
+    <aside class="verdict" aria-live="polite">
+      <div class="status idle" id="status">
+        <div class="tag" id="statusTag">In progress</div>
+        <h3 id="statusTitle">Answer the questions</h3>
+        <p id="statusText">The result updates as you go.</p>
+        <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+      </div>
+      <div class="card"><h4>Why</h4><ul id="reasons"></ul></div>
+      <div class="card"><h4>Conditions and next steps</h4><ul id="next"></ul></div>
+      <div class="card">
+        <h4>Send it to the AI Lead</h4>
+        <div class="actions">
+          <button class="btn" type="button" id="copyReq">Copy the request summary</button>
+          <button class="btn secondary" type="button" id="dlReq">Download the request summary</button>
+          <button class="btn secondary" type="button" id="dlCsv">Download the register line (CSV)</button>
+        </div>
+        <p class="toast" id="toast" role="status"></p>
+        <textarea class="fallback" id="fallback" hidden readonly aria-label="Request summary to copy"></textarea>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot">This tool helps staff complete the quick check; it does not approve anything. The AI Lead confirms the outcome and adds the use to the AI Register (SME-06). The register line download uses the same columns, in the same order, as the Register sheet. Nothing you type here is stored or sent anywhere.</footer>
+</div>
+
+<script>
+(function () {
+  const SUPPLIER = [
+    { id: 's1', text: 'Is it a business or professional account with data processing terms (not a personal or free consumer account)?', opts: [['Yes', 'ok'], ['No', 'bad'], ['Unsure', 'uns']] },
+    { id: 's2', text: 'Does the supplier use our data to train its models?', note: 'Must be No, or switched off.', opts: [['No', 'ok'], ['Can be switched off', 'ok'], ['Yes', 'bad'], ['Unsure', 'uns']] },
+    { id: 's3', text: 'Where is our data stored and processed?', opts: [['UK', 'ok'], ['EEA', 'ok'], ['Elsewhere', 'uns'], ['Unsure', 'uns']] },
+    { id: 's4', text: 'Can we control how long our data is kept, and have it deleted?', opts: [['Yes', 'ok'], ['No', 'bad'], ['Unsure', 'uns']] },
+    { id: 's5', text: 'Does it support multi-factor sign-in and removing a user’s access?', opts: [['Yes', 'ok'], ['No', 'bad'], ['Unsure', 'uns']] },
+  ];
+  const QUICK = [
+    { id: 'q1', text: 'Can it take actions on its own, such as sending emails, posting entries, filing, paying or changing records, rather than just suggesting something for a person to check?' },
+    { id: 'q2', text: 'Will it use special category data (such as health information), criminal offence data or information about money laundering suspicions, or send client data to a supplier without business terms?' },
+    { id: 'q3', text: 'Could its output influence a decision about a person, such as client acceptance, an AML risk rating, recruitment, staff performance or credit, even if a person makes the final call?' },
+    { id: 'q4', text: 'Will clients or the public use it directly, or see its output without a member of staff checking it first?' },
+    { id: 'q5', text: 'Could a mistake reach a client, HMRC, Companies House, a lender or anyone outside the firm without a person checking it first, or cause a loss on its own?' },
+    { id: 'q6', text: 'Would the firm struggle to carry on if it stopped working, or if the supplier changed it significantly?' },
+    { id: 'q7', text: 'Is anything about what data it uses, where that data goes, or what it can do still unclear?' },
+  ];
+  const CHECKS = {
+    q1: ['D8 Actions and limits', 'D5 Security (IT provider)'], q2: ['D1 Data protection (Data Protection Lead)', 'D3 AML (MLRO), if suspicion information is involved'],
+    q3: ['D4 Fairness', 'D1 Data protection, and whether a DPIA (SME-07) is needed'], q4: ['D2 Confidentiality and professional standards', 'D7 Accuracy and human checks'],
+    q5: ['D7 Accuracy and human checks', 'D2 Confidentiality and professional standards'], q6: ['D9 Environment and continuity'], q7: ['Settle the open questions with the AI Lead first'],
+  };
+  const HIGH_HINT = { q1: 'acting without a person approving each action is always High', q3: 'shaping a significant decision about a person is always High', q4: 'clients using it without staff checking each response is always High', q2: 'special category, criminal offence or AML suspicion data is always High' };
+  const REG_HEADERS = ['AI-ID', 'Tool or feature', 'Supplier', 'The use (purpose)', 'Tool Owner', 'Users', 'Data used', 'Client-facing?', 'Can act?', 'Quick check result', 'Highest impact (1-5)', 'Likelihood (1-5)', 'Risk score', 'Level from score', 'High trigger?', 'Governing level', 'Status', 'Decision date', 'Decided by', 'Conditions', 'Conditions done?', 'Review every (months)', 'Last review', 'Next review due', 'Review status', 'Last review note', 'Notes', 'Approved list no.'];
+
+  const $ = (s) => document.querySelector(s);
+  function seg(name, opts) {
+    return '<div class="seg" role="radiogroup">' + opts.map(([v, cls], i) =>
+      `<input type="radio" name="${name}" id="${name}_${i}" value="${v}"><label for="${name}_${i}" class="v-${cls}">${v}</label>`).join('') + '</div>';
+  }
+  $('#supplierQs').innerHTML = SUPPLIER.map((q, i) => `<div class="q"><div class="num">${String.fromCharCode(65 + i)}</div><div class="text">${q.text}${q.note ? `<small>${q.note}</small>` : ''}</div>${seg(q.id, q.opts)}</div>`).join('');
+  $('#quickQs').innerHTML = QUICK.map((q, i) => `<div class="q"><div class="num">${i + 1}</div><div class="text">${q.text}</div>${seg(q.id, [['Yes', 'yes'], ['No', 'ok'], ['Unsure', 'uns']])}</div>`).join('');
+
+  const val = (name) => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; };
+  const checked = (sel) => Array.from(document.querySelectorAll(sel + ' input:checked')).map((i) => i.value);
+  const text = (id) => ($('#' + id).value || '').trim();
+
+  function evaluate() {
+    const s = Object.fromEntries(SUPPLIER.map((q) => [q.id, val(q.id)]));
+    const q = Object.fromEntries(QUICK.map((x) => [x.id, val(x.id)]));
+    const np = checked('#np');
+    const answered = [...Object.values(s), ...Object.values(q)].filter(Boolean).length;
+    const total = SUPPLIER.length + QUICK.length;
+    const reasons = [], next = [], conditions = [];
+    let state = 'idle', tag = 'In progress', title = 'Answer the questions', body = `${answered} of ${total} answered. The result updates as you go.`;
+
+    if (np.length) {
+      state = 'high'; tag = 'Not permitted'; title = 'This use is not allowed';
+      body = 'It is on the not-permitted list, so it cannot go ahead with any tool.';
+      np.forEach((n) => reasons.push(n));
+      next.push('Do not use the tool for this. If it has already happened, tell the AI Lead today using the incident form (SME-05).');
+      return { state, tag, title, body, reasons, next, conditions, s, q, np, answered, total, result: 'Not permitted' };
+    }
+    const yes = QUICK.filter((x) => q[x.id] === 'Yes').map((x) => x.id);
+    const uns = QUICK.filter((x) => q[x.id] === 'Unsure').map((x) => x.id);
+    const supUns = SUPPLIER.filter((x) => s[x.id] === 'Unsure' || s[x.id] === 'Elsewhere').map((x) => x.id);
+
+    if (s.s1 === 'No') { reasons.push('Supplier check A: not a business account with data processing terms.'); next.push('Use a business or professional account before any firm or client information goes in.'); }
+    if (s.s2 === 'Yes') { reasons.push('Supplier check B: the supplier trains its models on our data and this cannot be switched off.'); next.push('Red flag: talk to the AI Lead. Client information cannot go into this tool as it stands.'); }
+    if (s.s2 === 'Can be switched off') conditions.push('Switch off training on our data before use.');
+    if (s.s3 === 'Elsewhere') reasons.push('Supplier check C: data is processed outside the UK and EEA, so the AI Lead must confirm the transfer safeguard.');
+    if (s.s4 === 'No') { reasons.push('Supplier check D: we cannot control retention or have our data deleted.'); conditions.push('Agree with the AI Lead what may go into the tool, given data cannot be deleted.'); }
+    if (s.s5 === 'No') { reasons.push('Supplier check E: no multi-factor sign-in or way to remove access.'); conditions.push('IT provider to confirm access can be controlled another way.'); }
+
+    const supplierBlock = s.s1 === 'No' || s.s2 === 'Yes';
+    const allQ = QUICK.every((x) => q[x.id]);
+    const allS = SUPPLIER.every((x) => s[x.id]);
+
+    if (yes.length) {
+      state = 'high'; tag = 'Risk check needed'; title = 'Not low risk: a short risk check is next';
+      const highs = yes.filter((id) => HIGH_HINT[id]);
+      body = highs.length ? 'One or more answers usually means High risk, so two partners decide after the risk check (SME-04).' : 'The AI Lead will work through the risk check (SME-04) with you. This is a closer look, not a no.';
+      yes.forEach((id) => reasons.push(`Question ${id.slice(1)} is Yes${HIGH_HINT[id] ? ': ' + HIGH_HINT[id] : ''}.`));
+      const set = new Set(); yes.forEach((id) => CHECKS[id].forEach((c) => set.add(c)));
+      next.push('Send this summary to the AI Lead. Do not use the tool for firm work until you hear back.');
+      next.push('Checks likely to apply in SME-04: ' + Array.from(set).join('; ') + '.');
+    } else if (supplierBlock) {
+      state = 'high'; tag = 'Not yet'; title = 'Fix the supplier problem first';
+      body = 'The quick-check answers may be fine, but the supplier set-up has to change before this can be approved.';
+      next.push('Send this summary to the AI Lead to agree the next step.');
+    } else if (uns.length || supUns.length) {
+      state = 'amber'; tag = 'Talk to the AI Lead'; title = 'Settle the open answers first';
+      body = 'Most unsure answers are resolved in a five-minute conversation. Anything still unsure after that counts as Yes.';
+      uns.forEach((id) => reasons.push(`Question ${id.slice(1)} is Unsure.`));
+      SUPPLIER.filter((x) => s[x.id] === 'Unsure').forEach((x) => reasons.push(`Supplier check ${String.fromCharCode(65 + SUPPLIER.indexOf(x))} is Unsure.`));
+      next.push('Send this summary to the AI Lead and agree a time to talk it through.');
+    } else if (allQ && allS) {
+      state = 'low'; tag = 'Likely low risk'; title = 'Likely low risk';
+      body = 'All seven answers are No and the supplier checks are satisfactory. The AI Lead can confirm this and add it to the register, usually within a week.';
+      reasons.push('All seven quick-check questions are No.');
+      reasons.push('The supplier checks are satisfactory.');
+      next.push('Send this summary to the AI Lead. Don’t start using it for firm work until they confirm.');
+      next.push('Once confirmed, it is reviewed at the annual register sweep.');
+    }
+    conditions.forEach((c) => next.push('Condition: ' + c));
+    const result = yes.length ? 'Some Yes' : (allQ && !uns.length ? 'All No' : '');
+    return { state, tag, title, body, reasons, next, conditions, s, q, np, answered, total, result, yes, uns };
+  }
+
+  function render() {
+    const r = evaluate();
+    const st = $('#status'); st.className = 'status ' + r.state;
+    $('#statusTag').textContent = r.tag; $('#statusTitle').textContent = r.title; $('#statusText').textContent = r.body;
+    $('#meter').style.width = Math.round((r.answered / r.total) * 100) + '%';
+    $('#reasons').innerHTML = r.reasons.map((x) => `<li>${esc(x)}</li>`).join('');
+    $('#next').innerHTML = r.next.map((x) => `<li>${esc(x)}</li>`).join('');
+    return r;
+  }
+  const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function summary() {
+    const r = evaluate(); const d = checked('#data');
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const L = [];
+    L.push('AI REQUEST AND QUICK CHECK (SME-03)', 'Completed with the AI Quick Check tool on ' + today, '');
+    L.push('PART A. THE TOOL AND HOW I WANT TO USE IT');
+    [['Name and team', text('who')], ['Tool or feature', text('tool')], ['Supplier', text('supplier')], ['New tool or new use', $('#kind').value], ['What for', text('purpose')], ['Who will use it', $('#users').value], ['Already in use', $('#already').value], ['Information going in', d.join(', ')], ['What happens to the output', text('output')]]
+      .forEach(([k, v]) => L.push(`${k}: ${v || '(not answered)'}`));
+    L.push('', 'NOT-PERMITTED LIST: ' + (r.np.length ? 'Applies: ' + r.np.join('; ') : 'None apply'));
+    L.push('', 'PART B. SUPPLIER CHECKS');
+    SUPPLIER.forEach((x, i) => L.push(`${String.fromCharCode(65 + i)}. ${x.text} ${r.s[x.id] || '(not answered)'}`));
+    L.push('', 'PART C. QUICK-CHECK QUESTIONS');
+    QUICK.forEach((x, i) => L.push(`${i + 1}. ${x.text} ${r.q[x.id] || '(not answered)'}`));
+    L.push('', 'RESULT: ' + r.title, r.body);
+    if (r.reasons.length) { L.push('', 'Why:'); r.reasons.forEach((x) => L.push('- ' + x)); }
+    if (r.next.length) { L.push('', 'Next steps and conditions:'); r.next.forEach((x) => L.push('- ' + x)); }
+    L.push('', 'PART D. OUTCOME (AI LEAD)', 'Outcome:', 'Conditions:', 'Register ID: AI-____', 'Next review date:', 'AI Lead signature and date:');
+    return L.join('\r\n');
+  }
+
+  function registerRow() {
+    const r = evaluate(); const d = checked('#data');
+    const order = ['Other personal data', 'Staff data', 'Client data', 'Firm internal', 'None'];
+    const dataUsed = order.find((o) => d.includes(o)) || '';
+    const yn = (v) => (v === 'Yes' ? 'Yes' : v === 'No' ? 'No' : '');
+    const notes = ['From the AI Quick Check tool on ' + new Date().toISOString().slice(0, 10)];
+    if (d.length > 1) notes.push('Information going in: ' + d.join(', '));
+    if (r.uns && r.uns.length) notes.push('Unsure to settle: question ' + r.uns.map((x) => x.slice(1)).join(', '));
+    if ($('#already').value === 'Yes') notes.push('Already in use when requested');
+    const vals = {
+      'Tool or feature': text('tool'), 'Supplier': text('supplier'), 'The use (purpose)': text('purpose'), 'Tool Owner': text('who'), 'Users': $('#users').value,
+      'Data used': dataUsed, 'Client-facing?': yn(r.q.q4), 'Can act?': yn(r.q.q1), 'Quick check result': r.result, 'Status': 'Requested',
+      'Conditions': r.conditions.join('; '), 'Notes': notes.join('. '),
+    };
+    return REG_HEADERS.map((h) => vals[h] || '');
+  }
+  const csvCell = (v) => { let s = String(v ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = () => '﻿' + [REG_HEADERS, registerRow()].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
+
+  function toast(msg) { $('#toast').textContent = msg; clearTimeout(toast.t); toast.t = setTimeout(() => ($('#toast').textContent = ''), 4000); }
+  function download(name, content, type) {
+    try {
+      const blob = new Blob([content], { type }); const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('Download started. If nothing appears, use Copy instead.');
+    } catch (e) { showFallback(content); }
+  }
+  function showFallback(content) {
+    const f = $('#fallback'); f.value = content; f.hidden = false; f.focus(); f.select();
+    toast('Select the text below and copy it.');
+  }
+  const slug = () => (text('tool') || 'ai-tool').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  $('#copyReq').addEventListener('click', () => {
+    const t = summary();
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast('Copied. Paste it into an email to the AI Lead.'), () => showFallback(t));
+    else showFallback(t);
+  });
+  $('#dlReq').addEventListener('click', () => download(`quick-check-${slug()}.txt`, summary(), 'text/plain;charset=utf-8'));
+  $('#dlCsv').addEventListener('click', () => download(`register-line-${slug()}.csv`, csv(), 'text/csv;charset=utf-8'));
+
+  const EX = {
+    grammar: { who: 'Sam Patel, Accounts', tool: 'Grammar and tone checker', supplier: '[Supplier]', kind: 'New tool', purpose: 'Checking spelling and tone in internal and client emails before I send them.', users: 'My team', already: 'No', data: ['Client data'], output: 'I read the suggestions and decide whether to accept them',
+      s: { s1: 'Yes', s2: 'Can be switched off', s3: 'UK', s4: 'Yes', s5: 'Yes' }, q: { q1: 'No', q2: 'No', q3: 'No', q4: 'No', q5: 'No', q6: 'No', q7: 'No' } },
+    copilot: { who: 'Practice manager', tool: 'Microsoft 365 Copilot', supplier: 'Microsoft', kind: 'New tool', purpose: 'Summarising internal meetings and drafting emails.', users: 'Whole firm', already: 'No', data: ['Client data', 'Staff data'], output: 'Drafts are reviewed before anything is sent',
+      s: { s1: 'Yes', s2: 'No', s3: 'UK', s4: 'Yes', s5: 'Yes' }, q: { q1: 'No', q2: 'No', q3: 'No', q4: 'No', q5: 'No', q6: 'No', q7: 'Yes' } },
+    cv: { who: 'Partner, recruitment', tool: 'CV screening tool', supplier: '[Supplier]', kind: 'New tool', purpose: 'Shortlisting applications for the trainee intake.', users: 'Just me', already: 'No', data: ['Other personal data'], output: 'A ranked shortlist I use to decide who to interview',
+      s: { s1: 'Yes', s2: 'No', s3: 'Elsewhere', s4: 'Yes', s5: 'Yes' }, q: { q1: 'No', q2: 'No', q3: 'Yes', q4: 'No', q5: 'No', q6: 'No', q7: 'Unsure' } },
+  };
+  function clearForm() {
+    $('#qc').reset(); $('#fallback').hidden = true; render();
+  }
+  function load(key) {
+    clearForm(); const e = EX[key];
+    ['who', 'tool', 'supplier', 'purpose', 'output'].forEach((k) => ($('#' + k).value = e[k]));
+    $('#kind').value = e.kind; $('#users').value = e.users; $('#already').value = e.already;
+    document.querySelectorAll('#data input').forEach((i) => (i.checked = e.data.includes(i.value)));
+    Object.entries({ ...e.s, ...e.q }).forEach(([n, v]) => { const el = document.querySelector(`input[name="${n}"][value="${v}"]`); if (el) el.checked = true; });
+    render(); toast('Example loaded. Change any answer to see the result move.');
+  }
+  document.querySelectorAll('[data-example]').forEach((b) => b.addEventListener('click', () => load(b.dataset.example)));
+  $('#clearBtn').addEventListener('click', clearForm);
+  $('#qc').addEventListener('input', render); $('#qc').addEventListener('change', render);
+  $('#qc').addEventListener('submit', (e) => e.preventDefault());
+  load('grammar');
+  $('#toast').textContent = '';
+})();
+</script>
+</body>
+</html>
